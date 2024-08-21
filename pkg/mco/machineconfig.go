@@ -3,6 +3,7 @@ package mco
 import (
 	"context"
 	"fmt"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/golang/glog"
 	"github.com/openshift-kni/eco-goinfra/pkg/clients"
@@ -304,4 +305,25 @@ func (builder *MCBuilder) validate() (bool, error) {
 	}
 
 	return true, nil
+}
+
+// WithConfigRaw sets the specified Raw Config to the MachineConfig.
+func (builder *MCBuilder) WithConfigRaw(config runtime.RawExtension) *MCBuilder {
+	if valid, _ := builder.validate(); !valid {
+		return builder
+	}
+
+	if len(config.Raw) == 0 {
+		glog.V(100).Infof("The Config cannot be empty")
+
+		builder.errorMsg = "'Config' cannot be empty"
+
+		return builder
+	}
+
+	glog.V(100).Infof("Setting Config: %v", config)
+
+	builder.Definition.Spec.Config = config
+
+	return builder
 }
